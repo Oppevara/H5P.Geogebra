@@ -1,0 +1,21 @@
+{
+  "title": "Geogebra",
+  "majorVersion": 1,
+  "minorVersion": 0,
+  "patchVersion": 0,
+  "runnable": 1,
+  "author": "Karli Raudsepp",
+  "machineName": "H5P.Geogebra",
+  "preloadedJs": [ 
+    { "path": "geogebra_webloader.js" },
+    { "path": "util.js" },
+    { "path": "geogebra_wrapper.js" },
+    { "path": "h5p.js" }
+  ],
+  "preloadedCss": [ 
+    { "path": "style.css" } 
+  ],
+  "editorDependencies": [ 
+    { "machineName": "H5PEditor.GeogebraEditor", "majorVersion": 1, "minorVersion": 0 } 
+  ] 
+}
