@@ -32,9 +32,9 @@ H5P.Geogebra = (function ($) {
           this.geogebra.set_elements(elements);
         }
       }.bind(this));
-    }
 
-    el.appendChild(menu);
+      el.appendChild(menu);
+    }
 
   }
 
