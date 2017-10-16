@@ -5,6 +5,5 @@
     "type": "text",
     "optional": true,
     "widget": "geogebra_editor"
-
   }
 ]

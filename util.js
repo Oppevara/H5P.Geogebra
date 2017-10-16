@@ -6,9 +6,9 @@ var build = function(tag_name, class_name, parent, inner_html) {
 	return el;
 };
 
-build_radio_menu = function(choices, default_choice) {
+build_radio_menu = function(choices, default_choice, callback) {
 	var name = random_string();
-	var div = build("div");
+	var div = build("div", "radio_menu");
 	div.setAttribute("data-selected", "");
 	for (var i = 0; i < choices.length; i++) {
 		var label = build("label", undefined, div, choices[i]);
@@ -20,7 +20,7 @@ build_radio_menu = function(choices, default_choice) {
 			radio.setAttribute("checked", "");
 			div.setAttribute("data-selected", choices[i]);
 		}
-		label.addEventListener("click", (function(choice) { return function() { div.setAttribute("data-selected", choice); } })(choices[i]));
+		label.addEventListener("click", (function(choice) { return function() { div.setAttribute("data-selected", choice); callback(choice); } })(choices[i]));
 	}
 	return div;
 };

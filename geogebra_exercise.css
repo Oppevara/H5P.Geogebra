@@ -1,0 +1,28 @@
+.geogebra_exercise .radio_menu {
+	height:30px;
+	box-sizing:border-box;
+}
+
+.geogebra_exercise .radio_menu label {
+	padding:10px;
+	border-radius:4px;
+	display:inline-block;
+	font-size:16px;
+	font-family:arial;
+}
+
+.geogebra_exercise .radio_menu label:hover {
+	background-color:rgba(59,153,252,0.5);
+}
+
+.geogebra_exercise .radio_menu label input {
+	margin-left:5px;
+}
+
+.geogebra_exercise .description_box {
+	padding:10px;
+}
+
+.geogebra_exercise .applet_scaler {
+	transform:scale(1) !important;
+}

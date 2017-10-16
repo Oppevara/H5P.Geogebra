@@ -1,6 +1,7 @@
 
-function geogebra_wrapper(el, mode, width, height) {
-	this.el = el;
+function geogebra_wrapper(mode, width, height) {
+	this.el = build("div", "geogebra_wrapper");
+	this.el.id = random_string();
 	this.mode = mode || "editor";
 	this._width = width || 800;
 	this._height = height || 600;
@@ -11,6 +12,7 @@ function geogebra_wrapper(el, mode, width, height) {
 		this.applet = new GGBApplet(params);
 		this.applet.inject(this.el.id);
 		if (callback_done !== undefined) callback_done();
+		this._sync_size();
 	}.bind(this);
 
 	this.inject_editor = function() {
@@ -31,7 +33,9 @@ function geogebra_wrapper(el, mode, width, height) {
 			"showTutorialLink":true,
 			"showLogging":false,
 			"useBrowserForJS":false,
-			"perspective":"AG"
+			"perspective":"AG",
+			"allowUpscale":false,
+			"scale":1
 		});
 	}.bind(this);
 
@@ -46,6 +50,8 @@ function geogebra_wrapper(el, mode, width, height) {
 			"allowStyleBar":false,
 			"showAlgebraInput":false,
 			"showLogging":false,
+			"allowUpscale":false,
+			"scale":1
 		});
 	}.bind(this);
 
@@ -143,34 +149,35 @@ function geogebra_wrapper(el, mode, width, height) {
 	this._sync_size = function(w, h) {
 		this.el.style.with = this._width + "px";
 		this.el.style.height = this._height + "px";
-		console.log("_sync_size not implemented");
-	};
+		window.top.dispatchEvent(new Event('resize'));
+	}.bind(this);
 
 	Object.defineProperty(this, "width", {
 		'get' : function() {
 			return this._width;
-		},
+		}.bind(this),
 		'set' : function(v) {
 			this._width = v;
 			this._sync_size();
-		}
+		}.bind(this)
 	}); 
 
 	Object.defineProperty(this, "height", {
 		'get' : function() {
 			return this._height;
-		},
+		}.bind(this),
 		'set' : function(v) {
 			this._height = v;
 			this._sync_size();
-		}
+		}.bind(this)
 	});
 
 	Object.defineProperty(this, "data", {
 		'get' : function() {
 			return this.applet.getAppletObject().getBase64();
-		},
+		}.bind(this),
 		'set' : function(v) {
+			if (v === undefined) return;
 			try {
 				this.applet.getAppletObject().setBase64(v);
 			} catch(ex) {
@@ -179,11 +186,11 @@ function geogebra_wrapper(el, mode, width, height) {
 		}.bind(this)
 	});
 
+	this._sync_size();
 
 	if (this.mode == "editor") {
 		this.inject_editor();
 	} else {
 		this.inject_viewer();
 	}
-
 }
