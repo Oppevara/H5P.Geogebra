@@ -38,6 +38,17 @@ function geogebra_exercise(mode) {
 		}.bind(this)
 	});
 
+	//	hack for firefox to fix height in column
+	this.fix_height = function() {
+		var rect = this.el.getBoundingClientRect();
+		if (rect.height === 0) {
+			setTimeout(this.fix_height, 100);
+			return;
+		}
+		this.el.style.height = rect.height + "px";
+		window.top.dispatchEvent(new Event('resize'));
+	}.bind(this);
+
 	this.build_figure = function(ggb64, description) {
 		this.description_box = build("div", "description_box", this.el, description);
 		this.applet = new geogebra_wrapper("viewer", 688, 600);
@@ -62,10 +73,11 @@ function geogebra_exercise(mode) {
 
 		this.applet = new geogebra_wrapper("editor", 688, 600);
 		this.el.appendChild(this.applet.el);
-
+		this.fix_height();
 	}.bind(this);
 
 	this.build_editor = function(ggb64, mode, description) {
+		var description_description = build("div", undefined, this.el, "Exercise description:");
 		this.description_box = build("textarea", undefined, this.el);
 		this.description_box.height = 300;	
 		this.description_box.value = description;
@@ -80,6 +92,5 @@ function geogebra_exercise(mode) {
 		this.applet = new geogebra_wrapper("editor", 876, 600);
 		this.applet.data = ggb64;
 		this.el.appendChild(this.applet.el);
-
 	}.bind(this);
 }

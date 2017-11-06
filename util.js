@@ -48,3 +48,8 @@ var h5p_get_data_str = function(o) {
 	if (o === undefined) return undefined;
 	return JSON.stringify(o);
 };
+
+find_root_element = function(el) {
+	while (el.parentElement !== null) el = el.parentElement;
+	return el;
+}

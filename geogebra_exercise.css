@@ -1,3 +1,7 @@
+.geogebra_exercise {
+	min-height:350px;
+}
+
 .geogebra_exercise .radio_menu {
 	height:30px;
 	box-sizing:border-box;

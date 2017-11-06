@@ -1,6 +1,7 @@
 (function(){
 	if (window.GGB_LOADED === true) return;
 	window.GGB_LOADED = true;
+	window.GGB_BUSY = false;
 	var script = document.createElement("script");
 	script.src = "https://cdn.geogebra.org/apps/deployggb.js";
 	document.head.appendChild(script);

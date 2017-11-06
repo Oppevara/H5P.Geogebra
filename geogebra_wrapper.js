@@ -8,11 +8,13 @@ function geogebra_wrapper(mode, width, height) {
 	this.applet = undefined;
 
 	this.inject = function(params, callback_done) {
-		if (typeof GGBApplet === "undefined") return setTimeout(function() { this.inject(params); }.bind(this), 100);
+		if (typeof GGBApplet === "undefined" || GGB_BUSY || find_root_element(this.el).tagName !== "HTML") return setTimeout(function() { this.inject(params); }.bind(this), 100);
+		GGB_BUSY = true;
 		this.applet = new GGBApplet(params);
-		this.applet.inject(this.el.id);
+		this.applet.inject(this.el);
 		if (callback_done !== undefined) callback_done();
 		this._sync_size();
+		GGB_BUSY = false;
 	}.bind(this);
 
 	this.inject_editor = function() {
