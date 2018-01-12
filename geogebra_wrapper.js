@@ -6,6 +6,7 @@ function geogebra_wrapper(mode, width, height) {
 	this._width = width || 800;
 	this._height = height || 600;
 	this.applet = undefined;
+	this.mark = "ᐧ";
 
 	this.inject = function(params, callback_done) {
 		if (typeof GGBApplet === "undefined" || GGB_BUSY || find_root_element(this.el).tagName !== "HTML") return setTimeout(function() { this.inject(params); }.bind(this), 100);
@@ -57,96 +58,86 @@ function geogebra_wrapper(mode, width, height) {
 		});
 	}.bind(this);
 
-	this.get_elements = function() {
-		var xml = this.applet.getAppletObject().getXML();
-		var elements = [];
-		var el_start = 0;
-		var el_end = 0;
-		while (true) {
-			el_start = xml.indexOf("<element", el_start);
-			if (el_start === -1) break;
-			el_end = xml.indexOf("</element>", el_start);
-			if (el_end === -1) break;
-			elements.push(xml.substring(el_start, el_end + 10));
-			el_start++;
-		}
-		return elements;
-	}.bind(this);
-
-	this.set_elements = function(elements) {
-		var boiler = this.applet.getAppletObject().getXML();
-		var el_start = boiler.indexOf("<construction");
-		if (el_start === -1) return;
-		el_start = boiler.indexOf(">", el_start);
-		if (el_start === -1) return;
-		var el_end = boiler.indexOf("</construction>", el_start);
-		if (el_end === -1) return;
-		var boiler_start = boiler.substring(0, el_start + 1);
-		var boiler_end = boiler.substring(el_end);
-
+	this.get_construction = function() {
+		var doc = xml_to_doc(this.applet.getAppletObject().getXML());
+		var elc = doc.getElementsByTagName("construction")[0];
 		var xml = "";
-		for (var i = 0; i < elements.length; i++) {
-			xml += elements[i];
+		for (var i = 0; i < elc.children.length; i++) {
+			xml += doc_to_xml(elc.children[i]);
 		}
-		this.applet.getAppletObject().setXML(boiler_start + xml + boiler_end);
+		return xml;
 	}.bind(this);
 
-	this.mark_element_label = function(element) {
-		var i1 = element.indexOf("label=");
-		if (i1 === -1) return;
-		i1 += 7;
-		var i2 = element.indexOf("\"", i1);
-		if (i2 === -1) return;
+	this.add_marked_elements = function(constructor_inner_xml) {
+		var xml = this.applet.getAppletObject().getXML();
+		xml = xml.replace("</geogebra>", "<constructor_add>" + constructor_inner_xml + "</constructor_add></geogebra>");
+		var doc = xml_to_doc(xml);
 
-		var pre = element.substring(0, i1);
-		var post = element.substring(i2);
-		var label = element.substring(i1, i2);
+		var el_const = doc.getElementsByTagName("construction")[0];
+		var el_add = doc.getElementsByTagName("constructor_add")[0];
 
-		if (label.indexOf("*") === -1) label = label + "*";
-		return pre + label + post;
-	}.bind(this);
+		while(el_add.children.length > 0) {
+			var el = el_add.children[0];
+			el.setAttribute("ggbw_marked", "true");
 
-	this.mark_element_color = function(element) {
-		var i1 = element.indexOf("<objColor");
-		if (i1 === -1) return;
-		i1 += 10;
-		var i2 = element.indexOf("/>", i1);
-		if (i2 === -1) return;
+			if (el.hasAttribute("label")) el.setAttribute("label", el.getAttribute("label") + this.mark);
 
-		var pre = element.substring(0, i1);
-		var post = element.substring(i2);
+			var el_cols = el.getElementsByTagName("objColor");
+			if (el_cols.length > 0) {
+				var el_col = el_cols[0];
+				el_col.setAttribute("r", 255);
+				el_col.setAttribute("g", 0);
+				el_col.setAttribute("b", 0);
+				//el_col.setAttribute("alpha", 1);
+			}
 
-		var color = ' r="255" g="0" b="0" alpha="0" ';
-		return pre + color + post;
-	}.bind(this);
+			var el_inputs = el.getElementsByTagName("input");
+			if (el_inputs.length > 0) {
+				var el_input = el_inputs[0];
+				for (var i = 0; i < el_input.attributes.length; i++) {
+					var attr = el_input.attributes[i].name;
+					el_input.setAttribute(attr, el_input.getAttribute(attr) + this.mark);
+				}
+			}
 
-	this.concat_marked = function(existing, marked_original) {
-		var marked = marked_original.slice();
-		for (var i = 0; i < marked.length; i++) {
-			marked[i] = this.mark_element_label(marked[i]);
-			marked[i] = this.mark_element_color(marked[i]);
+			var el_outputs = el.getElementsByTagName("output");
+			if (el_outputs.length > 0) {
+				var el_output = el_outputs[0];
+				for (var i = 0; i < el_output.attributes.length; i++) {
+					var attr = el_output.attributes[i].name;
+					el_output.setAttribute(attr, el_output.getAttribute(attr) + this.mark);
+				}
+			}
+
+			el_add.removeChild(el);
+			el_const.appendChild(el);
 		}
-		return existing.concat(marked);
+		el_add.parentElement.removeChild(el_add);
+
+		this.applet.getAppletObject().setXML(doc_to_xml(doc));		
 	}.bind(this);
 
-	this.is_marked = function(element) {
-		var i1 = element.indexOf("label=");
-		if (i1 === -1) return;
-		i1 += 7;
-		var i2 = element.indexOf("\"", i1);
-		if (i2 === -1) return;
-
-		var label = element.substring(i1, i2);
-		return label.indexOf("*") !== -1;
-	}.bind(this);
-
-	this.remove_marked_elements = function(elements) {
-		var ret = [];
-		for (var i = 0; i < elements.length; i++) {
-			if (!this.is_marked(elements[i])) ret.push(elements[i]);
+	this.remove_marked_elements = function() {
+		var doc = xml_to_doc(this.applet.getAppletObject().getXML());
+		var el_const = doc.getElementsByTagName("construction")[0];
+		var remove = [];
+		for (var i = 0; i < el_const.children.length; i++) {
+			var el = el_const.children[i];
+			if (el.hasAttribute("label")) {
+				if (el.getAttribute("label").indexOf(this.mark) !== -1) remove.push(el);
+			} else {
+				var outputs = el.getElementsByTagName("output");
+				if (outputs.length > 0) {
+					if (outputs[0].getAttribute(outputs[0].attributes[0].name).indexOf(this.mark) !== -1) {
+						remove.push(el);
+					}
+				}
+			}
 		}
-		return ret;	
+		while (remove.length > 0) el_const.removeChild(remove.pop());
+		this.applet.getAppletObject().setXML(doc_to_xml(doc));
 	}.bind(this);
+
 
 	this._sync_size = function(w, h) {
 		this.el.style.with = this._width + "px";

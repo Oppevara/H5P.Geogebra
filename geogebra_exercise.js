@@ -13,8 +13,8 @@ function geogebra_exercise(mode) {
 				var ret = {};
 				ret.data = this.applet.data;
 				ret.mode = this.sel_mode;
-				ret.elements = this.applet.get_elements();
 				ret.description = this.description_box.value;
+				ret.match_construction = this.applet.get_construction();
 				return ret;
 			}
 		}.bind(this),
@@ -22,15 +22,24 @@ function geogebra_exercise(mode) {
 			if (typeof v === "undefined") v = {};
 			if (typeof v.data === "undefined") v.data = undefined;
 			if (typeof v.mode === "undefined") v.mode = "Figure";
-			if (typeof v.elements === "undefined") v.elements = "";
 			if (typeof v.description === "undefined") v.description = "";
+			if (typeof v.match_construction === "undefined") {
+				if (typeof v.elements !== "undefined") {
+					//	old version compatibility 
+					v.match_construction = v.elements.join("");
+				} else {
+					v.match_construction = "";
+				}
+			}
 
 
 			this.el.innerHTML = "";
 			if (this.mode == "viewer") {
 				this._data = v;
 				if (v.mode == "Figure") this.build_figure(v.data, v.description);
-				if (v.mode == "Match") this.build_match(v.elements, v.description);
+				if (v.mode == "Match") {
+					this.build_match(v.match_construction, v.description);
+				}
 			}
 			if (this.mode == "editor") {
 				this.build_editor(v.data, v.mode, v.description);
@@ -56,17 +65,15 @@ function geogebra_exercise(mode) {
 		this.applet.data = ggb64;
 	}.bind(this);
 
-	this.build_match = function(match_elements, description) {
-		this.match_elements = match_elements;
+	this.build_match = function(match_construction, description) {
+		this.match_construction = match_construction;
 
 		this.description_box = build("div", "description_box", this.el, description);
 		var menu = build_radio_menu(["Hide Match", "Show Match"], "Hide Match", function(choice) {
 			if (choice == "Hide Match") {
-				var elements = this.applet.remove_marked_elements(this.applet.get_elements());
-          		this.applet.set_elements(elements);
+				this.applet.remove_marked_elements();
 			} else {
-				var elements = this.applet.concat_marked(this.applet.get_elements(), this.match_elements);
-          		this.applet.set_elements(elements);
+				this.applet.add_marked_elements(this.match_construction);
 			}
 		}.bind(this));
 		this.el.appendChild(menu);

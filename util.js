@@ -20,10 +20,16 @@ build_radio_menu = function(choices, default_choice, callback) {
 			radio.setAttribute("checked", "");
 			div.setAttribute("data-selected", choices[i]);
 		}
-		label.addEventListener("click", (function(choice) { return function() { div.setAttribute("data-selected", choice); callback(choice); } })(choices[i]));
+		radio.addEventListener("click", (function(choice) { return function(e) { div.setAttribute("data-selected", choice); callback(choice); } })(choices[i]));
 	}
 	return div;
 };
+
+function stop_propagation(e) {
+    e.cancelBubble = true;
+    if (e.stopPropagation) e.stopPropagation();
+}
+
 
 var random_string = function(n) {
 	n = n || 10;
@@ -36,20 +42,76 @@ var random_string = function(n) {
 	return s;
 };
 
-var h5p_get_data_obj = function(s) {
-	if (s === undefined) return undefined;
-	s = s.replace(new RegExp(/&quot;/, 'g'), "\"");
-	s = s.replace(new RegExp(/&lt;/, 'g'), "<");
-	s = s.replace(new RegExp(/&gt;/, 'g'), ">");
-	return JSON.parse(s);
-};
-
-var h5p_get_data_str = function(o) {
-	if (o === undefined) return undefined;
-	return JSON.stringify(o);
-};
-
 find_root_element = function(el) {
 	while (el.parentElement !== null) el = el.parentElement;
 	return el;
 }
+
+var h5p_get_data_obj = function(s) {
+	if (s === undefined) return undefined;
+	if (s.length > 0 && (s[0] == "[" || s[0] == "{")) {
+		return h5p_get_data_obj_v0(s);
+	}
+
+	if (s.length >= 3 && s.substring(0, 3) == "v1_") {
+		return h5p_get_data_obj_v1(s);
+	}
+
+	console.log("Corrputed or unknown data format");
+	return undefined;
+};
+
+
+
+var h5p_get_data_str = function(o) {
+	return h5p_get_data_str_v1(o);
+}
+
+var h5p_get_data_obj_v1 = function(s) {
+	return JSON.parse(atob(s.substring(3)));
+}
+
+var h5p_get_data_str_v1 = function(o) {
+	if (o === undefined) return undefined;
+	return "v1_" + btoa(JSON.stringify(o));
+};
+
+
+//	for historic reference
+var h5p_get_data_obj_v0 = function(s) {
+	s = s.replace(new RegExp(/&quot;/, 'g'), "\"");
+	s = s.replace(new RegExp(/&lt;/, 'g'), "<");
+	s = s.replace(new RegExp(/&gt;/, 'g'), ">");
+	console.log(s);
+	return JSON.parse(s);
+}
+
+var h5p_get_data_str_v0 = function(o) {
+	if (o === undefined) return undefined;
+	return JSON.stringify(o);
+}
+
+
+//	xml help
+
+function xml_to_doc(xml) {
+	return (new DOMParser()).parseFromString(xml, "application/xml");
+}
+
+function doc_to_xml(doc) {
+	return (new XMLSerializer()).serializeToString(doc);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
