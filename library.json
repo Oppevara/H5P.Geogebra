@@ -1,8 +1,8 @@
 {
   "title": "Geogebra",
   "majorVersion": 1,
-  "minorVersion": 0,
-  "patchVersion": 8,
+  "minorVersion": 1,
+  "patchVersion": 0,
   "runnable": 1,
   "author": "Karli Raudsepp",
   "machineName": "H5P.Geogebra",
