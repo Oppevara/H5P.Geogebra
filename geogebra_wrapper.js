@@ -142,7 +142,8 @@ function geogebra_wrapper(mode, width, height) {
 	this._sync_size = function(w, h) {
 		this.el.style.with = this._width + "px";
 		this.el.style.height = this._height + "px";
-		window.top.dispatchEvent(new Event('resize'));
+		//window.top.dispatchEvent(new Event('resize'));
+		h5p_resize_all_instances();
 	}.bind(this);
 
 	Object.defineProperty(this, "width", {

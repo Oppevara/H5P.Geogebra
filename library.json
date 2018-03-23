@@ -2,13 +2,15 @@
   "title": "Geogebra",
   "majorVersion": 1,
   "minorVersion": 0,
-  "patchVersion": 7,
+  "patchVersion": 8,
   "runnable": 1,
   "author": "Karli Raudsepp",
   "machineName": "H5P.Geogebra",
+  "preloadedDependencies": [
+    { "machineName" : "H5P.KarliLibrary", "majorVersion" : 1, "minorVersion" : 0 }
+  ],
   "preloadedJs": [ 
     { "path": "geogebra_webloader.js" },
-    { "path": "util.js" },
     { "path": "geogebra_wrapper.js" },
     { "path": "geogebra_exercise.js" },
     { "path": "h5p.js" }
