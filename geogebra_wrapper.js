@@ -114,7 +114,7 @@ function geogebra_wrapper(mode, width, height) {
 		}
 		el_add.parentElement.removeChild(el_add);
 
-		this.applet.getAppletObject().setXML(doc_to_xml(doc));		
+		this.applet.getAppletObject().setXML(doc_to_xml(doc));
 	}.bind(this);
 
 	this.remove_marked_elements = function() {
@@ -142,8 +142,13 @@ function geogebra_wrapper(mode, width, height) {
 	this._sync_size = function(w, h) {
 		this.el.style.with = this._width + "px";
 		this.el.style.height = this._height + "px";
-		//window.top.dispatchEvent(new Event('resize'));
-		h5p_resize_all_instances();
+		if (!("H5P" in window)) {
+			console.log("Can't find h5p object");
+			return;
+		}
+		for (var i = 0; i < H5P.instances.length; i++) {
+			H5P.trigger(H5P.instances[i], 'resize');
+		}
 	}.bind(this);
 
 	Object.defineProperty(this, "width", {
@@ -154,7 +159,7 @@ function geogebra_wrapper(mode, width, height) {
 			this._width = v;
 			this._sync_size();
 		}.bind(this)
-	}); 
+	});
 
 	Object.defineProperty(this, "height", {
 		'get' : function() {
