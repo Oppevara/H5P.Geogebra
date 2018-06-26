@@ -11,9 +11,16 @@ H5P.Geogebra = (function ($) {
  
 
   C.prototype.attach = function ($container) {
-    this.applet = new geogebra_exercise("viewer", 876, 630);
-    this.applet.data = this.data;
-    $container.append(this.applet.el);
+    console.log("loaded " + this.libraryInfo.versionedName);
+
+    var lazy_load = function() {
+      if (!GGB_READY) return schedule_recall(arguments, this);
+      this.applet = new geogebra_exercise("viewer", 876, 630);
+      this.applet.data = this.data;
+      $container.append(this.applet.el);
+    }.bind(this);
+
+    lazy_load();
   }
 
  

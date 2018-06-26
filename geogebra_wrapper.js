@@ -7,18 +7,29 @@ function geogebra_wrapper(mode, width, height) {
 	this._height = height || 600;
 	this.applet = undefined;
 	this.mark = "ᐧ";
+	this.ready = 0;
 
 	this.inject = function(params, callback_done) {
-		if (typeof GGBApplet === "undefined" || GGB_BUSY || find_root_element(this.el).tagName !== "HTML") return setTimeout(function() { this.inject(params); }.bind(this), 100);
-		GGB_BUSY = true;
+		if (!GGB_READY || find_root_element(this.el).tagName !== "HTML") return schedule_recall(arguments, this);
+		GGB_READY = 0;
+
 		this.applet = new GGBApplet(params);
-		this.applet.inject(this.el);
-		if (callback_done !== undefined) callback_done();
+		this.applet.inject(this.el);	
 		this._sync_size();
-		GGB_BUSY = false;
+
+		//	wait for it
+		var lazy_check = function() {
+			if (this.applet.getAppletObject === undefined || this.applet.getAppletObject() === undefined || this.applet.getAppletObject().debug === undefined) return schedule_recall(arguments, this);
+			GGB_READY = 1;
+			this.ready = 1;
+			window.appl = this.applet;
+			if (callback_done !== undefined) callback_done();
+			console.log("GGB id: " + this.el.id + " finished loading");
+		}.bind(this);
+		lazy_check();
 	}.bind(this);
 
-	this.inject_editor = function() {
+	this.inject_editor = function(callback_done) {
 		this.inject({
 			"id":this.el.id + "applet",
 			"height":this._height,
@@ -39,10 +50,30 @@ function geogebra_wrapper(mode, width, height) {
 			"perspective":"AG",
 			"allowUpscale":false,
 			"scale":1
-		});
+		}, callback_done);
 	}.bind(this);
 
-	this.inject_viewer = function() {
+	this.inject_viewer = function(callback_done) {
+		//	temporary fix, inspired by Pjotr's savage idea
+		this.el.style.opacity = 0;
+		this.inject_editor(function() {
+			setTimeout(function() {
+				var ao = this.applet.getAppletObject();
+				ao.showToolBar(false);
+				ao.showMenuBar(false);
+				ao.showAlgebraInput(false);
+				ao.setPerspective("G");
+
+				var style_bar = this.el.querySelector(".TitleBarPanel");
+				if (style_bar !== null) style_bar.style.display = "none";
+				this.el.style.opacity = 1;
+			}.bind(this), 100);
+
+			if (callback_done !== undefined) callback_done();
+		}.bind(this));
+
+
+		return;
 		this.inject({
 			"id":this.el.id + "applet",
 			"height":this._height,
@@ -55,10 +86,12 @@ function geogebra_wrapper(mode, width, height) {
 			"showLogging":false,
 			"allowUpscale":false,
 			"scale":1
-		});
+		}, callback_done);
 	}.bind(this);
 
 	this.get_construction = function() {
+		if (!this.ready) throw("geogebra_wrapper: applet not yet loaded");
+
 		var doc = xml_to_doc(this.applet.getAppletObject().getXML());
 		var elc = doc.getElementsByTagName("construction")[0];
 		var xml = "";
@@ -69,6 +102,8 @@ function geogebra_wrapper(mode, width, height) {
 	}.bind(this);
 
 	this.add_marked_elements = function(constructor_inner_xml) {
+		if (!this.ready) return schedule_recall(arguments, this);
+
 		var xml = this.applet.getAppletObject().getXML();
 		xml = xml.replace("</geogebra>", "<constructor_add>" + constructor_inner_xml + "</constructor_add></geogebra>");
 		var doc = xml_to_doc(xml);
@@ -118,6 +153,8 @@ function geogebra_wrapper(mode, width, height) {
 	}.bind(this);
 
 	this.remove_marked_elements = function() {
+		if (!this.ready) return schedule_recall(arguments, this);
+
 		var doc = xml_to_doc(this.applet.getAppletObject().getXML());
 		var el_const = doc.getElementsByTagName("construction")[0];
 		var remove = [];
@@ -168,15 +205,13 @@ function geogebra_wrapper(mode, width, height) {
 
 	Object.defineProperty(this, "data", {
 		'get' : function() {
+			if (!this.ready) throw("geogebra_wrapper: applet not yet loaded");
 			return this.applet.getAppletObject().getBase64();
 		}.bind(this),
 		'set' : function(v) {
+			if (!this.ready) return schedule_recall(arguments, this);
 			if (v === undefined) return;
-			try {
-				this.applet.getAppletObject().setBase64(v);
-			} catch(ex) {
-				setTimeout(function() {this.data = v;}.bind(this), 100);
-			}
+			this.applet.getAppletObject().setBase64(v);
 		}.bind(this)
 	});
 
