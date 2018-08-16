@@ -25,7 +25,7 @@ function geogebra_exercise(mode) {
 			if (typeof v.description === "undefined") v.description = "";
 			if (typeof v.match_construction === "undefined") {
 				if (typeof v.elements !== "undefined") {
-					//	old version compatibility 
+					//	old version compatibility
 					v.match_construction = v.elements.join("");
 				} else {
 					v.match_construction = "";
@@ -69,8 +69,8 @@ function geogebra_exercise(mode) {
 		this.match_construction = match_construction;
 
 		this.description_box = build("div", "description_box", this.el, description);
-		var menu = build_radio_menu(["Hide Match", "Show Match"], "Hide Match", function(choice) {
-			if (choice == "Hide Match") {
+		var menu = build_radio_menu(["Peida vaste", "Näita vastet"], "Peida vaste", function(choice) {
+			if (choice == "Peida vaste") {
 				this.applet.remove_marked_elements();
 			} else {
 				this.applet.add_marked_elements(this.match_construction);
@@ -84,15 +84,15 @@ function geogebra_exercise(mode) {
 	}.bind(this);
 
 	this.build_editor = function(ggb64, mode, description) {
-		var description_description = build("div", undefined, this.el, "Exercise description:");
+		var description_description = build("div", undefined, this.el, "Ülesande kirjeldus");
 		this.description_box = build("textarea", undefined, this.el);
-		this.description_box.height = 300;	
+		this.description_box.height = 300;
 		this.description_box.value = description;
 
 		this.sel_mode = mode;
-		var mode_title = this.sel_mode == "Figure" ? "Static figure" : "Match with original";
-		var menu = build_radio_menu(["Static figure", "Match with original"], mode_title, function(choice) {
-			this.sel_mode = choice == "Static figure" ? "Figure" : "Match";
+		var mode_title = this.sel_mode == "Figure" ? "Staatiline" : "Leia vaste";
+		var menu = build_radio_menu(["Staatiline", "Leia vaste"], mode_title, function(choice) {
+			this.sel_mode = choice == "Staatiline" ? "Figure" : "Match";
 		}.bind(this));
 		this.el.appendChild(menu);
 
