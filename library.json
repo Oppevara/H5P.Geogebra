@@ -2,24 +2,24 @@
   "title": "Geogebra",
   "majorVersion": 1,
   "minorVersion": 1,
-  "patchVersion": 3,
+  "patchVersion": 4,
   "runnable": 1,
   "author": "Karli Raudsepp",
   "machineName": "H5P.Geogebra",
   "preloadedDependencies": [
     { "machineName" : "H5P.KarliLibrary", "majorVersion" : 1, "minorVersion" : 0 }
   ],
-  "preloadedJs": [ 
+  "preloadedJs": [
     { "path": "geogebra_webloader.js" },
     { "path": "geogebra_wrapper.js" },
     { "path": "geogebra_exercise.js" },
     { "path": "h5p.js" }
   ],
-  "preloadedCss": [ 
+  "preloadedCss": [
     { "path": "geogebra_exercise.css" },
-    { "path": "style.css" } 
+    { "path": "style.css" }
   ],
-  "editorDependencies": [ 
-    { "machineName": "H5PEditor.GeogebraEditor", "majorVersion": 1, "minorVersion": 0 } 
-  ] 
+  "editorDependencies": [
+    { "machineName": "H5PEditor.GeogebraEditor", "majorVersion": 1, "minorVersion": 0 }
+  ]
 }
