@@ -14,7 +14,7 @@ function geogebra_wrapper(mode, width, height) {
 		GGB_READY = 0;
 
 		this.applet = new GGBApplet(params);
-		this.applet.inject(this.el);	
+		this.applet.inject(this.el);
 		this._sync_size();
 
 		//	wait for it
@@ -49,7 +49,8 @@ function geogebra_wrapper(mode, width, height) {
 			"useBrowserForJS":false,
 			"perspective":"AG",
 			"allowUpscale":false,
-			"scale":1
+			"scale":1,
+			"language":"et"
 		}, callback_done);
 	}.bind(this);
 
@@ -85,7 +86,8 @@ function geogebra_wrapper(mode, width, height) {
 			"showAlgebraInput":false,
 			"showLogging":false,
 			"allowUpscale":false,
-			"scale":1
+			"scale":1,
+			"language":"et"
 		}, callback_done);
 	}.bind(this);
 
@@ -149,7 +151,7 @@ function geogebra_wrapper(mode, width, height) {
 		}
 		el_add.parentElement.removeChild(el_add);
 
-		this.applet.getAppletObject().setXML(doc_to_xml(doc));		
+		this.applet.getAppletObject().setXML(doc_to_xml(doc));
 	}.bind(this);
 
 	this.remove_marked_elements = function() {
@@ -191,7 +193,7 @@ function geogebra_wrapper(mode, width, height) {
 			this._width = v;
 			this._sync_size();
 		}.bind(this)
-	}); 
+	});
 
 	Object.defineProperty(this, "height", {
 		'get' : function() {
