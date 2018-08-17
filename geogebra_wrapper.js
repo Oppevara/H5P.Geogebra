@@ -133,7 +133,9 @@ function geogebra_wrapper(mode, width, height) {
 				var el_input = el_inputs[0];
 				for (var i = 0; i < el_input.attributes.length; i++) {
 					var attr = el_input.attributes[i].name;
-					el_input.setAttribute(attr, el_input.getAttribute(attr) + this.mark);
+					if (el_input.getAttribute(attr) !== 'xAxis' && el_input.getAttribute(attr) !== 'yAxis') {
+						el_input.setAttribute(attr, el_input.getAttribute(attr) + this.mark);
+					}
 				}
 			}
 
@@ -143,6 +145,15 @@ function geogebra_wrapper(mode, width, height) {
 				for (var i = 0; i < el_output.attributes.length; i++) {
 					var attr = el_output.attributes[i].name;
 					el_output.setAttribute(attr, el_output.getAttribute(attr) + this.mark);
+				}
+			}
+
+			var el_start_points = el.getElementsByTagName('startPoint');
+			if (el_start_points.length > 0) {
+				var el_start_point = el_start_points[0];
+				for (var i = 0; i < el_start_point.attributes.length; i++) {
+					var attr = el_start_point.attributes[i].name;
+					el_start_point.setAttribute(attr, el_start_point.getAttribute(attr) + this.mark);
 				}
 			}
 
