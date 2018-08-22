@@ -55,7 +55,8 @@ function geogebra_exercise(mode) {
 			return;
 		}
 		this.el.style.height = rect.height + "px";
-		window.top.dispatchEvent(new Event('resize'));
+		//window.top.dispatchEvent(new Event('resize'));
+		h5p_resize_all_instances();
 	}.bind(this);
 
 	this.build_figure = function(ggb64, description) {
