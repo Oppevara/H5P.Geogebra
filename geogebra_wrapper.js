@@ -97,11 +97,72 @@ function geogebra_wrapper(mode, width, height) {
 		var doc = xml_to_doc(this.applet.getAppletObject().getXML());
 		var elc = doc.getElementsByTagName("construction")[0];
 		var xml = "";
-		for (var i = 0; i < elc.children.length; i++) {
-			xml += doc_to_xml(elc.children[i]);
+		for (var i = 0; i < elc.childNodes.length; i++) {
+			var el = elc.childNodes[i];
+			if (el.nodeType !== 1/*Node.ELEMENT_NODE*/) continue;
+			xml += doc_to_xml(el);
 		}
 		return xml;
 	}.bind(this);
+
+	this.is_ie_or_edge = function() {
+		return document.documentMode || /Edge/.test(navigator.userAgent);
+	};
+
+	// IE and Edge sort attributes in reverse, this breaks vectors in GeoGebra
+	// Example: <input a0="A" a1="B"/> produces Vector(A,B)
+	// <input a1="B" a0="A"/> produces Vector(B,A)
+	// Although the difference is in position of attributes only
+	this._fix_xml = function(el_const, doc_xml) {
+		var fixes = [];
+
+		for (var i = 0; i < el_const.childNodes.length; i++) {
+			var el = el_const.childNodes[i];
+			if (el.nodeType !== 1/*Node.ELEMENT_NODE*/) continue;
+
+			var el_inputs = el.getElementsByTagName("input");
+			if (el_inputs.length > 0) {
+				var el_input = el_inputs[0];
+
+				if (el_input.attributes.length > 1) {
+					var attributes = [];
+					for (var j = 0; j < el_input.attributes.length; j++) {
+						var attr = el_input.attributes[j].name;
+						attributes.push({
+							'name': attr,
+							'value': el_input.getAttribute(attr),
+							'string': attr + '="' + el_input.getAttribute(attr) + '"'
+						});
+					}
+					var fix = {};
+					fix.from = attributes.map(function(attribute) {
+						return attribute.string;
+					});
+					fix.from = fix.from.join(' ');
+					attributes.sort(function(a, b) {
+						if (a.name === b.name) {
+							return 0;
+						}
+
+						return a.name > b.name ? 1 : -1;
+					});
+					fix.to = attributes.map(function(attribute) {
+						return attribute.string;
+					});
+					fix.to = fix.to.join(' ');
+					fixes.push(fix);
+				}
+			}
+		}
+
+		if (fixes.length > 0) {
+			fixes.forEach(function(fix) {
+				doc_xml = doc_xml.replace(fix.from, fix.to);
+			});
+		}
+
+		return doc_xml;
+	};
 
 	this.add_marked_elements = function(constructor_inner_xml) {
 		if (!this.ready) return schedule_recall(arguments, this);
@@ -113,8 +174,8 @@ function geogebra_wrapper(mode, width, height) {
 		var el_const = doc.getElementsByTagName("construction")[0];
 		var el_add = doc.getElementsByTagName("constructor_add")[0];
 
-		while(el_add.children.length > 0) {
-			var el = el_add.children[0];
+		while(el_add.firstElementChild !== null) {
+			var el = el_add.firstElementChild;
 			el.setAttribute("ggbw_marked", "true");
 
 			if (el.hasAttribute("label")) el.setAttribute("label", el.getAttribute("label") + this.mark);
@@ -160,9 +221,14 @@ function geogebra_wrapper(mode, width, height) {
 			el_add.removeChild(el);
 			el_const.appendChild(el);
 		}
-		el_add.parentElement.removeChild(el_add);
+		doc.getElementsByTagName("geogebra")[0].removeChild(el_add);
 
-		this.applet.getAppletObject().setXML(doc_to_xml(doc));
+		var doc_xml = doc_to_xml(doc);
+		if (this.is_ie_or_edge()) {
+			doc_xml = this._fix_xml(el_const, doc_xml);
+		}
+
+		this.applet.getAppletObject().setXML(doc_xml);
 	}.bind(this);
 
 	this.remove_marked_elements = function() {
@@ -171,8 +237,9 @@ function geogebra_wrapper(mode, width, height) {
 		var doc = xml_to_doc(this.applet.getAppletObject().getXML());
 		var el_const = doc.getElementsByTagName("construction")[0];
 		var remove = [];
-		for (var i = 0; i < el_const.children.length; i++) {
-			var el = el_const.children[i];
+		for (var i = 0; i < el_const.childNodes.length; i++) {
+			var el = el_const.childNodes[i];
+			if (el.nodeType !== 1/*Node.ELEMENT_NODE*/) continue;
 			if (el.hasAttribute("label")) {
 				if (el.getAttribute("label").indexOf(this.mark) !== -1) remove.push(el);
 			} else {
@@ -185,7 +252,12 @@ function geogebra_wrapper(mode, width, height) {
 			}
 		}
 		while (remove.length > 0) el_const.removeChild(remove.pop());
-		this.applet.getAppletObject().setXML(doc_to_xml(doc));
+
+		var doc_xml = doc_to_xml(doc);
+		if (this.is_ie_or_edge()) {
+			doc_xml = this._fix_xml(el_const, doc_xml);
+		}
+		this.applet.getAppletObject().setXML(doc_xml);
 	}.bind(this);
 
 
