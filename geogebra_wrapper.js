@@ -164,6 +164,11 @@ function geogebra_wrapper(mode, width, height) {
 		return doc_xml;
 	};
 
+	// Fixes empty xmlns attributes added in Safari
+	this._fix_empty_xmlns = function(doc_xml) {
+		return doc_xml.replace(/xmlns=\"\"\s?/g, '');
+	};
+
 	this.add_marked_elements = function(constructor_inner_xml) {
 		if (!this.ready) return schedule_recall(arguments, this);
 
@@ -228,6 +233,8 @@ function geogebra_wrapper(mode, width, height) {
 			doc_xml = this._fix_xml(el_const, doc_xml);
 		}
 
+		doc_xml = this._fix_empty_xmlns(doc_xml);
+
 		this.applet.getAppletObject().setXML(doc_xml);
 	}.bind(this);
 
@@ -257,6 +264,9 @@ function geogebra_wrapper(mode, width, height) {
 		if (this.is_ie_or_edge()) {
 			doc_xml = this._fix_xml(el_const, doc_xml);
 		}
+
+		doc_xml = this._fix_empty_xmlns(doc_xml);
+
 		this.applet.getAppletObject().setXML(doc_xml);
 	}.bind(this);
 
