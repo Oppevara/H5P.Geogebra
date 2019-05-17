@@ -199,7 +199,8 @@ function geogebra_wrapper(mode, width, height) {
 				var el_input = el_inputs[0];
 				for (var i = 0; i < el_input.attributes.length; i++) {
 					var attr = el_input.attributes[i].name;
-					if (el_input.getAttribute(attr) !== 'xAxis' && el_input.getAttribute(attr) !== 'yAxis') {
+					var attrval = el_input.getAttribute(attr);
+					if (attrval !== 'xAxis' && attrval !== 'yAxis' && attrval !== 'zAxis' && !/^\d+$/.test(attrval)) {
 						el_input.setAttribute(attr, el_input.getAttribute(attr) + this.mark);
 					}
 				}
