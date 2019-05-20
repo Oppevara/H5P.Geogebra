@@ -194,8 +194,11 @@ function geogebra_wrapper(mode, width, height) {
 				//el_col.setAttribute("alpha", 1);
 			}
 
+			// NB! This solution prevents types with complex expressions from failing,
+			// though it does not change the names and could lead to issues with same variable name being used more than once
+			var skip_inputs_processing = el.nodeName === 'command' && (el.getAttribute('name') === 'Integral' || el.getAttribute('name') === 'IntegralBetween');
 			var el_inputs = el.getElementsByTagName("input");
-			if (el_inputs.length > 0) {
+			if (el_inputs.length > 0 && !skip_inputs_processing) {
 				var el_input = el_inputs[0];
 				for (var i = 0; i < el_input.attributes.length; i++) {
 					var attr = el_input.attributes[i].name;
@@ -221,6 +224,14 @@ function geogebra_wrapper(mode, width, height) {
 				for (var i = 0; i < el_start_point.attributes.length; i++) {
 					var attr = el_start_point.attributes[i].name;
 					el_start_point.setAttribute(attr, el_start_point.getAttribute(attr) + this.mark);
+				}
+			}
+
+			var el_linked_geos = el.getElementsByTagName('linkedGeo');
+			if (el_linked_geos.length > 0) {
+				var el_linked_geo = el_linked_geos[0];
+				if (el_linked_geo.hasAttribute('exp')) {
+					el_linked_geo.setAttribute('exp', el_linked_geo.getAttribute('exp') + this.mark);
 				}
 			}
 
