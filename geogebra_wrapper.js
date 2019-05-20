@@ -279,6 +279,7 @@ function geogebra_wrapper(mode, width, height) {
 
 		doc_xml = this._fix_empty_xmlns(doc_xml);
 
+		// NB! <cascell> element will not be removed
 		this.applet.getAppletObject().setXML(doc_xml);
 	}.bind(this);
 
