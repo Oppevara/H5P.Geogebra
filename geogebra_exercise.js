@@ -72,9 +72,11 @@ function geogebra_exercise(mode) {
 		this.description_box = build("div", "description_box", this.el, description);
 		var menu = build_radio_menu(["Peida vaste", "Näita vastet"], "Peida vaste", function(choice) {
 			if (choice == "Peida vaste") {
-				this.applet.remove_marked_elements();
+				// TODO It might make sense to set the currentAppletBase64Data value to NULL
+				this.applet.applet.getAppletObject().setBase64(this.currentAppletBase64Data);
 			} else {
-				this.applet.add_marked_elements(this.match_construction);
+				this.currentAppletBase64Data = this.applet.applet.getAppletObject().getBase64();
+				this.applet.applet.getAppletObject().setBase64(this.data.data);
 			}
 		}.bind(this));
 		this.el.appendChild(menu);

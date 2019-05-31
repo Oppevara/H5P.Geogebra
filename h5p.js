@@ -7,8 +7,8 @@ H5P.Geogebra = (function ($) {
     this.id = id;
     this.applet = undefined;
     this.data = h5p_get_data_obj(this.options.data);
-  };
- 
+  }
+
 
   C.prototype.attach = function ($container) {
     console.log("loaded " + this.libraryInfo.versionedName);
@@ -21,9 +21,8 @@ H5P.Geogebra = (function ($) {
     }.bind(this);
 
     lazy_load();
-  }
+  };
 
- 
+
   return C;
 })(H5P.jQuery);
-

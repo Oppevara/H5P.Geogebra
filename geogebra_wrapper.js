@@ -105,6 +105,7 @@ function geogebra_wrapper(mode, width, height) {
 		return xml;
 	}.bind(this);
 
+	// UNUSED This code is not used at the moment
 	this.is_ie_or_edge = function() {
 		return document.documentMode || /Edge/.test(navigator.userAgent);
 	};
@@ -113,6 +114,7 @@ function geogebra_wrapper(mode, width, height) {
 	// Example: <input a0="A" a1="B"/> produces Vector(A,B)
 	// <input a1="B" a0="A"/> produces Vector(B,A)
 	// Although the difference is in position of attributes only
+	// UNUSED This code is not used at the moment
 	this._fix_xml = function(el_const, doc_xml) {
 		var fixes = [];
 
@@ -165,12 +167,16 @@ function geogebra_wrapper(mode, width, height) {
 	};
 
 	// Fixes empty xmlns attributes added in Safari
+	// UNUSED This code is not used at the moment
 	this._fix_empty_xmlns = function(doc_xml) {
 		return doc_xml.replace(/xmlns=\"\"\s?/g, '');
 	};
 
+	// UNUSED This code is not used at the moment
 	this.add_marked_elements = function(constructor_inner_xml) {
 		if (!this.ready) return schedule_recall(arguments, this);
+
+		var command_to_skip = ['Integral', 'IntegralBetween', 'ResidualPlot'];
 
 		var xml = this.applet.getAppletObject().getXML();
 		xml = xml.replace("</geogebra>", "<constructor_add>" + constructor_inner_xml + "</constructor_add></geogebra>");
@@ -194,9 +200,37 @@ function geogebra_wrapper(mode, width, height) {
 				//el_col.setAttribute("alpha", 1);
 			}
 
+			// START Unfinished or incomplete code
+		  if (el.nodeName === 'expression' && el.hasAttribute('exp') && el.hasAttribute('type')) {
+				// TODO Need to make sure that it has at least one comma
+				if (el.getAttribute('type') === 'point' && /\((.*)\)/.test(el.getAttribute('exp'))) {
+					var tmp_expr = el.getAttribute('exp');
+					var tmp_expr_split = tmp_expr.slice(1, -1).split(',');
+					for (var i = 0; i < tmp_expr_split.length; i++) {
+						if (!/^\d+$/.test(tmp_expr_split[i])) {
+							tmp_expr_split[i] += this.mark;
+						}
+					}
+					el.setAttribute('exp', '(' + tmp_expr_split.join(',') + ')');
+				}
+			}
+			if (el.nodeName === 'expression' && el.hasAttribute('exp')) {
+				if (/\{(.*)\}/.test(el.getAttribute('exp'))) {
+					var tmp_expr = el.getAttribute('exp');
+					var tmp_expr_split = tmp_expr.slice(1, -1).split(',');
+					for (var i = 0; i < tmp_expr_split.length; i++) {
+						if (!/^\d+$/.test(tmp_expr_split[i])) {
+							tmp_expr_split[i] += this.mark;
+						}
+					}
+					el.setAttribute('exp', '{' + tmp_expr_split.join(',') + '}');
+				}
+			}
+			// END
+
 			// NB! This solution prevents types with complex expressions from failing,
 			// though it does not change the names and could lead to issues with same variable name being used more than once
-			var skip_inputs_processing = el.nodeName === 'command' && (el.getAttribute('name') === 'Integral' || el.getAttribute('name') === 'IntegralBetween');
+			var skip_inputs_processing = el.nodeName === 'command' && command_to_skip.indexOf(el.getAttribute('name')) !== -1;
 			var el_inputs = el.getElementsByTagName("input");
 			if (el_inputs.length > 0 && !skip_inputs_processing) {
 				var el_input = el_inputs[0];
@@ -250,6 +284,7 @@ function geogebra_wrapper(mode, width, height) {
 		this.applet.getAppletObject().setXML(doc_xml);
 	}.bind(this);
 
+	// UNUSED This code is not used at the moment
 	this.remove_marked_elements = function() {
 		if (!this.ready) return schedule_recall(arguments, this);
 
